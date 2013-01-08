@@ -3,7 +3,7 @@ use strict;
 use base 'Net::Server::PreFork';
 
 use Data::Dump qw(dump);
-use Socket qw(IPPROTO_TCP TCP_NODELAY);
+use Socket qw(IPPROTO_TCP TCP_NODELAY TCP_DEFER_ACCEPT);
 use IO::Socket qw(:crlf);
 use HTTP::Parser::XS qw(parse_http_request);
 use HTTP::Status qw(status_message);
