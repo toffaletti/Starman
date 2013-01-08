@@ -490,7 +490,7 @@ sub _finalize_response {
 
     # Buffer the headers so they are sent with the first write() call
     # This reduces the number of TCP packets we are sending
-    syswrite $conn, join( $CRLF, @headers, '' ) . $CRLF;
+    my $header_buffer = join( $CRLF, @headers, '' ) . $CRLF;
 
     if (defined $res->[2]) {
         Plack::Util::foreach($res->[2], sub {
@@ -500,11 +500,19 @@ sub _finalize_response {
                 return unless $len;
                 $buffer = sprintf( "%x", $len ) . $CRLF . $buffer . $CRLF;
             }
+            if ($header_buffer) {
+                $buffer = $header_buffer . $buffer;
+                $header_buffer = '';
+            }
             syswrite $conn, $buffer;
             DEBUG && warn "[$$] Wrote " . length($buffer) . " bytes\n";
         });
 
-        syswrite $conn, "0$CRLF$CRLF" if $chunked;
+        if ($chunked) {
+            syswrite $conn, $header_buffer . "0$CRLF$CRLF";
+        } elsif ($header_buffer) {
+            syswrite $conn, $header_buffer;
+        }
     } else {
         return Plack::Util::inline_object
             write => sub {
@@ -514,11 +522,19 @@ sub _finalize_response {
                     return unless $len;
                     $buffer = sprintf( "%x", $len ) . $CRLF . $buffer . $CRLF;
                 }
+                if ($header_buffer) {
+                    $buffer = $header_buffer . $buffer;
+                    $header_buffer = '';
+                }
                 syswrite $conn, $buffer;
                 DEBUG && warn "[$$] Wrote " . length($buffer) . " bytes\n";
             },
             close => sub {
-                syswrite $conn, "0$CRLF$CRLF" if $chunked;
+                if ($chunked) {
+                    syswrite $conn, $header_buffer . "0$CRLF$CRLF";
+                } elsif ($header_buffer) {
+                    syswrite $conn, $header_buffer;
+                }
             };
     }
 }
