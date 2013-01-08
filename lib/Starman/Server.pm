@@ -85,6 +85,16 @@ sub run {
     );
 }
 
+sub post_bind {
+    my $self = shift;
+    $self->SUPER::post_bind;
+
+    if ($self->{options}{defer_accept}) {
+        setsockopt($self, IPPROTO_TCP, TCP_DEFER_ACCEPT,
+            $self->{options}{defer_accept});
+    }
+}
+
 sub pre_loop_hook {
     my $self = shift;
 
