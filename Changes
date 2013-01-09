@@ -1,6 +1,9 @@
 Revision history for Perl extension Starman
 
-0.300601  Mon Jan 7 18:33:00 PST 2012
+0.300602  Tue Jan 8 16:26:00 PST 2013
+        - add defer_accept option to enable TCP_DEFER_ACCEPT (toffaletti)
+
+0.300601  Mon Jan 7 18:33:00 PST 2013
         - buffer headers (toffaletti)
 
 0.3006  Wed Dec 19 09:55:05 JST 2012
