@@ -89,9 +89,12 @@ sub post_bind {
     my $self = shift;
     $self->SUPER::post_bind;
 
-    if ($self->{options}{defer_accept}) {
-        setsockopt($self, IPPROTO_TCP, TCP_DEFER_ACCEPT,
-            $self->{options}{defer_accept});
+    if ($self->{options}->{defer_accept}) {
+        my $prop = $self->{'server'};
+        foreach my $sock (@{ $prop->{'sock'} }) {
+            setsockopt($sock, IPPROTO_TCP, TCP_DEFER_ACCEPT,
+                0 + $self->{options}->{defer_accept});
+        }
     }
 }
 
